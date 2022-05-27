@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using SwapiMVC.Models;
 
 namespace SwapiMVC.Controllers
 {
@@ -14,9 +16,13 @@ namespace SwapiMVC.Controllers
         {
             _httpClient = httpClientFactory.CreateClient("swapi");
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string page)
         {
-            return View();
+            string route = $"people?page={page ?? "1"}";
+            HttpResponseMessage response = await _httpClient.GetAsync(route);
+            var responseString = await response.Content.ReadAsStringAsync();
+            var people = JsonSerializer.Deserialize<ResultsViewModel<PeopleViewModel>>(responseString);
+            return View(people);
         }
     }
 }
